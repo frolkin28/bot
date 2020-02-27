@@ -2,7 +2,8 @@ from sqlalchemy import create_engine, Column, Integer, String, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-engine = create_engine('sqlite:///admins.db')
+engine = create_engine('sqlite:///base.db',
+                       connect_args={'check_same_thread': False})
 Base = declarative_base()
 session = sessionmaker(bind=engine)()
 
@@ -26,9 +27,10 @@ class Driver(Base):
     username = Column('username', String, nullable=True)
     number = Column('number', String(60), nullable=False)
     auto = Column('auto', String(255))
+    phone = Column('phone', String(20))
 
 
-class User_state(Base):
-    __tablename__ = 'user_state'
+# class User_state(Base):
+#     __tablename__ = 'user_state'
 
-    id = Column('id', Integer, primary_key=True)
+#     id = Column('id', Integer, primary_key=True)

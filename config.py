@@ -1,5 +1,6 @@
 from telebot import TeleBot
-from os import environ
+import os
 
-token = environ.get('token')
+token = os.environ.get('token')
 bot = TeleBot(token)
+BASE_DIR = os.getcwd()
