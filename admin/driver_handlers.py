@@ -1,6 +1,6 @@
 from .validators import check_admin, check_phone
-from config import bot
-from models import Admin, Driver, session
+from config import bot, db
+from models import Admin, Driver
 
 
 @bot.message_handler(func=check_admin, commands=['add_driver'])
@@ -64,8 +64,8 @@ def driver_phone_step(message, driver):
         bot.send_message(chat_id=message.chat.id,
                          text=text)
         driver = Driver(**dr)
-        session.add(driver)
-        session.commit()
+        db.session.add(driver)
+        db.session.commit()
     else:
         msg = bot.send_message(chat_id=message.chat.id,
                                text='Введи правильный номер')
@@ -74,7 +74,7 @@ def driver_phone_step(message, driver):
 
 @bot.message_handler(func=check_admin, commands=['show_drivers'])
 def show_drivers(message):
-    drivers = session.query(Driver).all()
+    drivers = Driver.query.all()
     for driver in drivers:
         text = 'ID: {} | Name: {}\nUsername: {} | Phone: {}\nNumber: {} | Auto: {}'.format(str(driver.telegram_id),
                                                                                            driver.name, driver.username, driver.phone, driver.number, driver.auto)
@@ -83,4 +83,18 @@ def show_drivers(message):
 
 @bot.message_handler(func=check_admin, commands=['delete_driver'])
 def delete_driver(message):
-    pass
+    msg = bot.send_message(chat_id=message.chat.id, text='Введи id водителя')
+    bot.register_next_step_handler(msg, driver_delete_step)
+
+
+def driver_delete_step(message):
+    try:
+        telegram_id = int(message.text)
+        driver = Driver.query.filter(
+            Driver.telegram_id == telegram_id).first()
+    except:
+        bot.send_message(chat_id=message.chat.id, text='Такого водителя нет')
+    else:
+        db.session.delete(driver)
+        db.session.commit()
+        bot.send_message(chat_id=message.chat.id, text='Водитель удален')

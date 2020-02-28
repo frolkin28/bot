@@ -1,6 +1,5 @@
 from config import bot
-from collections import defaultdict
-from models import Admin, session
+from models import Admin
 
 
 @bot.message_handler(commands=['start'])

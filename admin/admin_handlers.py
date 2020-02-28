@@ -1,7 +1,7 @@
-from admin.validators import check_admin
-from config import bot, BASE_DIR
-from models import Admin, session
 import os
+from admin.validators import check_admin
+from config import bot, BASE_DIR, db
+from models import Admin
 
 
 @bot.message_handler(func=check_admin, commands=['show_commands'])
@@ -46,14 +46,14 @@ def admin_username_step(message, admin):
     text = 'Новый админ добавлен'
     admin = Admin(telegram_id=ad['telegram_id'],
                   name=ad['name'], username=ad['username'], creator=False)
-    session.add(admin)
-    session.commit()
+    db.session.add(admin)
+    db.session.commit()
     bot.send_message(chat_id=message.chat.id, text=text)
 
 
 @bot.message_handler(func=check_admin, commands=['show_admins'])
 def show_admins(message):
-    admins = session.query(Admin).all()
+    admins = Admin.query.all()
     for admin in admins:
         text = 'ID: {}\nName: {}\nUsername: {}'.format(
             str(admin.telegram_id), admin.name, admin.username)
@@ -68,8 +68,8 @@ def delete_admin(message):
 
 def admin_delete_step(message):
     telegram_id = int(message.text)
-    admin = session.query(Admin).filter(
-        Admin.telegram_id == telegram_id).one()
+    admin = Admin.query.filter(
+        Admin.telegram_id == telegram_id).first()
     if admin.creator == True:
         bot.send_message(chat_id=message.chat.id,
                          text='Нельзя удалить создателя')
@@ -77,8 +77,8 @@ def admin_delete_step(message):
         bot.send_message(chat_id=message.chat.id,
                          text='Прости, но себя удалить нельзя')
     else:
-        session.delete(admin)
-        session.commit()
+        db.session.delete(admin)
+        db.session.commit()
         bot.send_message(chat_id=message.chat.id, text='Админ удален')
 
 

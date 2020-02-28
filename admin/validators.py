@@ -1,9 +1,9 @@
-from models import session, Admin
+from models import Admin
 from re import fullmatch, compile
 
 
 def check_admin(message):
-    admin = session.query(Admin).filter(
+    admin = Admin.query.filter(
         Admin.telegram_id == message.from_user.id).first()
     if admin:
         return True

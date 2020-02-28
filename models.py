@@ -1,36 +1,20 @@
-from sqlalchemy import create_engine, Column, Integer, String, Boolean
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
-
-engine = create_engine('sqlite:///base.db',
-                       connect_args={'check_same_thread': False})
-Base = declarative_base()
-session = sessionmaker(bind=engine)()
+from config import db
 
 
-class Admin(Base):
-    __tablename__ = 'admins'
-
-    id = Column('id', Integer, primary_key=True)
-    telegram_id = Column('telegram_id', Integer, unique=True, nullable=False)
-    name = Column('name', String(255))
-    username = Column('username', String)
-    creator = Column('creator', Boolean, nullable=False)
+class Admin(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    telegram_id = db.Column(db.Integer, unique=True, nullable=False)
+    name = db.Column(db.String(255))
+    username = db.Column(db.String(60))
+    creator = db.Column(db.Boolean, nullable=False, default=False)
 
 
-class Driver(Base):
-    __tablename__ = 'drivers'
-
-    id = Column('id', Integer, primary_key=True)
-    telegram_id = Column('telegram_id', Integer, unique=True, nullable=False)
-    name = Column('name', String(255))
-    username = Column('username', String, nullable=True)
-    number = Column('number', String(60), nullable=False)
-    auto = Column('auto', String(255))
-    phone = Column('phone', String(20))
-
-
-# class User_state(Base):
-#     __tablename__ = 'user_state'
-
-#     id = Column('id', Integer, primary_key=True)
+class Driver(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    telegram_id = db.Column(db.Integer, unique=True, nullable=False)
+    name = db.Column(db.String(255))
+    username = db.Column(db.String(60), nullable=True)
+    number = db.Column(db.String(60), nullable=False)
+    auto = db.Column(db.String(255))
+    phone = db.Column(db.String(20))
+    status = db.Column(db.String(40), nullable=False, default='unavaliable')
