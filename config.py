@@ -1,19 +1,12 @@
 import os
-from telebot import TeleBot
-from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
+import pathlib
+from dotenv import load_dotenv
 
 
-class Config:
-    SQLALCHEMY_DATABASE_URI = 'mysql+mysqlconnector://root:012810@localhost/taxibot'
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
+TOKEN = os.environ.get('token')
+BASE_DIR = pathlib.Path(__file__).parent
+API_KEY = os.environ.get('api_key')
 
+load_dotenv(BASE_DIR / '.env')
 
-token = os.environ.get('token')
-bot = TeleBot(token)
-BASE_DIR = os.getcwd()
-
-
-app = Flask(__name__)
-app.config.from_object(Config)
-db = SQLAlchemy(app)
+DATABASE_URI = f"mysql+mysqlconnector://{os.getenv('mysql_user')}:{os.getenv('mysql_password')}@localhost/{os.getenv('db_name')}"

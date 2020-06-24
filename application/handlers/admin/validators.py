@@ -1,10 +1,11 @@
-from models import Admin
-from re import fullmatch, compile
+import re
+
+from application.services import AdminService
 
 
 def check_admin(message):
-    admin = Admin.query.filter(
-        Admin.telegram_id == message.from_user.id).first()
+    service = AdminService()
+    admin = service.get_by_tg_id(message.from_user.id)
     if admin:
         return True
     else:
@@ -12,7 +13,7 @@ def check_admin(message):
 
 
 def check_phone(message):
-    pattern = compile(r'\+380\d{9}')
+    pattern = re.compile(r'\+380\d{9}')
     phone = pattern.fullmatch(message)
     if phone:
         return True
