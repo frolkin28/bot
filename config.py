@@ -13,6 +13,6 @@ DATABASE_URI = f"mysql+mysqlconnector://{os.getenv('mysql_user')}:{os.getenv('my
 REDIS_QUEUE_NAME = 'drivers_queue'
 
 redis_config = {
-    'host': 'localhost',
-    'port': 6379
+    'host': os.getenv('redis_host'),
+    'port': os.getenv('redis_port')
 }

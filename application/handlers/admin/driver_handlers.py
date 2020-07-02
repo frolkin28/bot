@@ -73,7 +73,7 @@ def show_drivers(message):
     if drivers:
         for driver in drivers:
             text = 'ID: {} | Name: {}\nUsername: {} | Phone: {}\nNumber: {} | Auto: {}\nStatus: {}'.format(
-                str(driver.telegram_id),
+                driver.telegram_id,
                 driver.name,
                 driver.username,
                 driver.phone,
@@ -113,12 +113,11 @@ def avaliable_drivers(message):
     drivers = DriverService().get_by_status(DriverStatus.avaliable)
     if drivers:
         for driver in drivers:
-            text = 'ID: {} | Name: {}\nNumber: {} | Auto: {}\nStatus: {}'.format(
-                str(driver.telegram_id),
+            text = 'ID: {} | Name: {}\nNumber: {} | Auto: {}'.format(
+                driver.telegram_id,
                 driver.name,
                 driver.number,
-                driver.auto,
-                driver.status.name
+                driver.auto
             )
             bot.send_message(chat_id=message.chat.id, text=text)
     else:
