@@ -1,7 +1,8 @@
-import os
 from telebot import TeleBot
 
 import config
 
-token = os.environ.get('token')
-bot = TeleBot(token)
+
+bot = TeleBot(config.TOKEN)
+
+from application.handlers import *

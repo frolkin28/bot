@@ -1,4 +1,5 @@
 import typing
+from sqlalchemy.exc import IntegrityError
 
 from application.database import current_session
 from application.entities import AdminEntity
@@ -34,12 +35,16 @@ class AdminService:
                 entities = []
         return entities
 
-    def create(self, entity: AdminEntity) -> AdminEntity:
+    def create(self, entity: AdminEntity) -> typing.Optional[AdminEntity]:
         orm_admin = self.build_orm_entity(entity)
         with current_session() as session:
-            session.add(orm_admin)
-            session.commit()
-            entity = self.build_entity(orm_admin)
+            try:
+                session.add(orm_admin)
+                session.commit()
+            except IntegrityError:
+                entity = None
+            else:
+                entity = self.build_entity(orm_admin)
         return entity
 
     def delete(self, telegram_id: int) -> bool:
