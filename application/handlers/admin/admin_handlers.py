@@ -47,8 +47,7 @@ def admin_username_step(message, admin):
         bot.send_message(chat_id=message.chat.id,
                          text='Введены неверные данные, попробуй еще раз')
     else:
-        service = AdminService()
-        created_admin = service.create(new_admin)
+        created_admin = AdminService().create(new_admin)
         if created_admin:
             text = f'Админ {created_admin.name} добавлен!'
         else:
@@ -58,8 +57,7 @@ def admin_username_step(message, admin):
 
 @bot.message_handler(func=check_admin, commands=['show_admins'])
 def show_admins(message):
-    service = AdminService()
-    admins = service.get_all()
+    admins = AdminService().get_all()
     if admins:
         for admin in admins:
             text = 'ID: {}\nName: {}\nUsername: {}'.format(
@@ -77,9 +75,8 @@ def delete_admin(message):
 
 def admin_delete_step(message):
     try:
-        telegram_id = int(message.text)
-        service = AdminService()
-        admin = service.get_by_tg_id(telegram_id)
+        telegram_id = int(message.text) 
+        admin = AdminService().get_by_tg_id(telegram_id)
         if admin:
             if admin.creator:
                 bot.send_message(chat_id=message.chat.id,

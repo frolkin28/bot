@@ -4,6 +4,7 @@ from .validators import check_admin
 from application import bot
 from application.services import DriverService
 from application.entities import DriverEntity
+from application.constants import DriverStatus
 
 
 @bot.message_handler(func=check_admin, commands=['add_driver'])
@@ -68,8 +69,7 @@ def driver_phone_step(message, driver):
 
 @bot.message_handler(func=check_admin, commands=['show_drivers'])
 def show_drivers(message):
-    service = DriverService()
-    drivers = service.get_all()
+    drivers = DriverService().get_all()
     if drivers:
         for driver in drivers:
             text = 'ID: {} | Name: {}\nUsername: {} | Phone: {}\nNumber: {} | Auto: {}\nStatus: {}'.format(
@@ -83,12 +83,13 @@ def show_drivers(message):
             )
             bot.send_message(chat_id=message.chat.id, text=text)
     else:
-        bot.send_message(chat_id=message.chat.id, text='Нет водителей') 
+        bot.send_message(chat_id=message.chat.id, text='Нет водителей')
 
 
 @bot.message_handler(func=check_admin, commands=['delete_driver'])
 def delete_driver(message):
-    msg = bot.send_message(chat_id=message.chat.id, text='Введи telegram id водителя')
+    msg = bot.send_message(chat_id=message.chat.id,
+                           text='Введи telegram id водителя')
     bot.register_next_step_handler(msg, driver_delete_step)
 
 
@@ -96,15 +97,30 @@ def driver_delete_step(message):
     try:
         telegram_id = int(message.text)
     except ValueError:
-        bot.send_message(chat_id=message.chat.id, text='Неверный telegram id. Попробуй еще раз')
+        bot.send_message(chat_id=message.chat.id,
+                         text='Неверный telegram id. Попробуй еще раз')
     else:
-        service = DriverService()
-        result = service.delete(telegram_id)
+        result = DriverService().delete(telegram_id)
         if result:
             bot.send_message(chat_id=message.chat.id, text='Водитель удален')
         else:
-            bot.send_message(chat_id=message.chat.id, text='Такого водителя нет')
+            bot.send_message(chat_id=message.chat.id,
+                             text='Такого водителя нет')
 
 
-
-        
+@bot.message_handler(func=check_admin, commands=['avaliable_drivers'])
+def avaliable_drivers(message):
+    drivers = DriverService().get_by_status(DriverStatus.avaliable)
+    if drivers:
+        for driver in drivers:
+            text = 'ID: {} | Name: {}\nNumber: {} | Auto: {}\nStatus: {}'.format(
+                str(driver.telegram_id),
+                driver.name,
+                driver.number,
+                driver.auto,
+                driver.status.name
+            )
+            bot.send_message(chat_id=message.chat.id, text=text)
+    else:
+        bot.send_message(chat_id=message.chat.id,
+                         text='Нет доступных водителей')

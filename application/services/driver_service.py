@@ -8,6 +8,26 @@ from application.constants import DriverStatus
 
 
 class DriverService:
+    def get_by_tg_id(self, telegram_id: int) -> typing.Optional[DriverEntity]:
+        with current_session() as session:
+            driver = session.query(Driver).filter(
+                Driver.telegram_id == telegram_id).first()
+            if driver:
+                entity = self.build_entity(driver)
+            else:
+                entity = None
+        return entity
+
+    def get_by_status(self, status: DriverStatus) -> typing.List[DriverEntity]:
+        with current_session() as session:
+            drivers = session.query(Driver).filter(
+                Driver.status == status).all()
+            if drivers:
+                entities = [self.build_entity(driver) for driver in drivers]
+            else:
+                entities = []
+        return entities
+
     def get_all(self) -> typing.List[DriverEntity]:
         with current_session() as session:
             drivers = session.query(Driver).all()
@@ -35,9 +55,12 @@ class DriverService:
                 Driver.telegram_id == telegram_id).delete()
             session.commit()
         return bool(res)
-    
+
     def set_status(self, telegram_id: int, status: DriverStatus) -> None:
-        pass
+        with current_session() as session:
+            driver = session.query(Driver).filter(
+                Driver.telegram_id == telegram_id).update({'status': status})
+            session.commit()
 
     @staticmethod
     def build_entity(orm_object: Driver) -> DriverEntity:

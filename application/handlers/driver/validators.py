@@ -1,9 +1,8 @@
-from models import Admin, Driver
+from application.services import DriverService
 
 
 def check_driver(message):
-    driver = Driver.query.filter(
-        Driver.telegram_id == message.from_user.id).first()
+    driver = DriverService().get_by_tg_id(message.from_user.id)
     if driver:
         return True
     else:
