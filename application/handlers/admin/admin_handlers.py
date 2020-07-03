@@ -6,7 +6,7 @@ from aiogram.dispatcher import FSMContext
 
 from application import dp
 from application.services import AdminService
-from application.states import AddAdmin, DeleteDriver
+from application.states import AddAdmin, DeleteAdmin
 from config import BASE_DIR
 from application.entities import AdminEntity
 from .validators import check_admin
@@ -87,11 +87,11 @@ async def show_admins(message: types.Message):
 
 @dp.message_handler(check_admin, commands=['delete_admin'])
 async def delete_admin(message: types.Message):
-    await DeleteDriver.TELEGRAM_ID.set()
+    await DeleteAdmin.TELEGRAM_ID.set()
     await message.answer(text='Введи telegram id админа')
 
 
-@dp.message_handler(check_admin, state=DeleteDriver.TELEGRAM_ID)
+@dp.message_handler(check_admin, state=DeleteAdmin.TELEGRAM_ID)
 async def admin_delete_step(message: types.Message, state: FSMContext):
     try:
         telegram_id = int(message.text)

@@ -1,62 +1,89 @@
 import pydantic
 
+from aiogram import types
+from aiogram.dispatcher import FSMContext
+
 from .validators import check_admin
-from application import bot
+from application import dp
 from application.services import DriverService
 from application.entities import DriverEntity
 from application.constants import DriverStatus
+from application.states import AddDriver, DeleteDriver
 
 
-@bot.message_handler(func=check_admin, commands=['add_driver'])
-def add_driver(message):
+@dp.message_handler(check_admin, commands=['add_driver'])
+async def add_driver(message: types.Message):
     text = 'Отлично! Введи telegram id нового водителя'
-    msg = bot.send_message(chat_id=message.chat.id, text=text)
-    bot.register_next_step_handler(msg, driver_id_step)
+    await AddDriver.TELEGRAM_ID.set()
+    await message.answer(text=text)
 
 
-def driver_id_step(message):
-    driver = {}
-    driver['telegram_id'] = message.text
+@dp.message_handler(check_admin, state=AddDriver.TELEGRAM_ID)
+async def driver_id_step(message: types.Message, state: FSMContext):
+    telegram_id = message.text
+    async with state.proxy() as state:
+        state['driver'] = {'telegram_id': telegram_id}
+
     text = 'Теперь введи имя водителя'
-    msg = bot.send_message(chat_id=message.chat.id, text=text)
-    bot.register_next_step_handler(msg, driver_name_step, driver=driver)
+    await AddDriver.NAME.set()
+    await message.answer(text=text)
 
 
-def driver_name_step(message, driver):
-    driver['name'] = message.text
+@dp.message_handler(check_admin, state=AddDriver.NAME)
+async def driver_name_step(message: types.Message, state: FSMContext):
+    name = message.text
+    async with state.proxy() as state:
+        state['driver']['name'] = name
+
     text = 'Теперь введи username админа без символа @'
-    msg = bot.send_message(chat_id=message.chat.id, text=text)
-    bot.register_next_step_handler(msg, driver_username_step, driver=driver)
+    await AddDriver.USERNAME.set()
+    await message.answer(text=text)
 
 
-def driver_username_step(message, driver):
-    driver['username'] = message.text
+@dp.message_handler(check_admin, state=AddDriver.USERNAME)
+async def driver_username_step(message: types.Message, state: FSMContext):
+    username = message.text
+    async with state.proxy() as state:
+        state['driver']['username'] = username
+
     text = 'Теперь введи номерной знак машины водителя'
-    msg = bot.send_message(chat_id=message.chat.id, text=text)
-    bot.register_next_step_handler(msg, driver_number_step, driver=driver)
+    await AddDriver.NUMBER.set()
+    await message.answer(text=text)
 
 
-def driver_number_step(message, driver):
-    driver['number'] = message.text
+@dp.message_handler(check_admin, state=AddDriver.NUMBER)
+async def driver_number_step(message: types.Message, state: FSMContext):
+    number = message.text
+    async with state.proxy() as state:
+        state['driver']['number'] = number
+
     text = 'Теперь введи описание машины'
-    msg = bot.send_message(chat_id=message.chat.id, text=text)
-    bot.register_next_step_handler(msg, driver_auto_step, driver=driver)
+    await AddDriver.AUTO.set()
+    await message.answer(text=text)
 
 
-def driver_auto_step(message, driver):
-    driver['auto'] = message.text
+@dp.message_handler(check_admin, state=AddDriver.AUTO)
+async def driver_auto_step(message: types.Message, state: FSMContext):
+    auto = message.text
+    async with state.proxy() as state:
+        state['driver']['auto'] = auto
+
     text = 'Теперь введи телефонный номер водителя (+380...)'
-    msg = bot.send_message(chat_id=message.chat.id, text=text)
-    bot.register_next_step_handler(msg, driver_phone_step, driver=driver)
+    await AddDriver.PHONE.set()
+    await message.answer(text=text)
 
 
-def driver_phone_step(message, driver):
-    driver['phone'] = message.text
+@dp.message_handler(check_admin, state=AddDriver.PHONE)
+async def driver_phone_step(message: types.Message, state: FSMContext):
+    phone = message.text
+    data = await state.get_data()
+    driver = data.get('driver')
+    driver['phone'] = phone
+    await state.finish()
     try:
         new_driver = DriverEntity(**driver)
     except pydantic.ValidationError:
-        bot.send_message(chat_id=message.chat.id,
-                         text='Введены неправильные данные')
+        await message.answer(text='Введены неправильные данные')
     else:
         service = DriverService()
         created_driver = service.craete(new_driver)
@@ -64,11 +91,11 @@ def driver_phone_step(message, driver):
             text = f'Водитель {created_driver.name} добавлен'
         else:
             text = 'Такой водитель уже существует'
-        bot.send_message(chat_id=message.chat.id, text=text)
+        await message.answer(text=text)
 
 
-@bot.message_handler(func=check_admin, commands=['show_drivers'])
-def show_drivers(message):
+@dp.message_handler(check_admin, commands=['show_drivers'])
+async def show_drivers(message: types.Message):
     drivers = DriverService().get_all()
     if drivers:
         for driver in drivers:
@@ -81,35 +108,35 @@ def show_drivers(message):
                 driver.auto,
                 driver.status.name
             )
-            bot.send_message(chat_id=message.chat.id, text=text)
+            await message.answer(text=text)
     else:
-        bot.send_message(chat_id=message.chat.id, text='Нет водителей')
+        await message.answer(text='Нет водителей')
 
 
-@bot.message_handler(func=check_admin, commands=['delete_driver'])
-def delete_driver(message):
-    msg = bot.send_message(chat_id=message.chat.id,
-                           text='Введи telegram id водителя')
-    bot.register_next_step_handler(msg, driver_delete_step)
+@dp.message_handler(check_admin, commands=['delete_driver'])
+async def delete_driver(message: types.Message):
+    await DeleteDriver.TELEGRAM_ID.set()
+    await message.answer(text='Введи telegram id водителя')
 
 
-def driver_delete_step(message):
+@dp.message_handler(check_admin, state=DeleteDriver.TELEGRAM_ID)
+async def driver_delete_step(message: types.Message, state: FSMContext):
+    await state.finish()
     try:
         telegram_id = int(message.text)
     except ValueError:
-        bot.send_message(chat_id=message.chat.id,
-                         text='Неверный telegram id. Попробуй еще раз')
+        await message.answer(text='Неверный telegram id. Попробуй еще раз')
     else:
         result = DriverService().delete(telegram_id)
         if result:
-            bot.send_message(chat_id=message.chat.id, text='Водитель удален')
+            text = 'Водитель удален'
         else:
-            bot.send_message(chat_id=message.chat.id,
-                             text='Такого водителя нет')
+            text = 'Такого водителя нет'
+        await message.answer(text=text)
 
 
-@bot.message_handler(func=check_admin, commands=['avaliable_drivers'])
-def avaliable_drivers(message):
+@dp.message_handler(check_admin, commands=['avaliable_drivers'])
+async def avaliable_drivers(message):
     drivers = DriverService().get_by_status(DriverStatus.avaliable)
     if drivers:
         for driver in drivers:
@@ -119,7 +146,6 @@ def avaliable_drivers(message):
                 driver.number,
                 driver.auto
             )
-            bot.send_message(chat_id=message.chat.id, text=text)
+            await message.answer(text=text)
     else:
-        bot.send_message(chat_id=message.chat.id,
-                         text='Нет доступных водителей')
+        await message.answer(text='Нет доступных водителей')

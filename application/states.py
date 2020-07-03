@@ -7,6 +7,10 @@ class AddAdmin(StatesGroup):
     USERNAME = State()
 
 
+class DeleteAdmin(StatesGroup):
+    TELEGRAM_ID = State()
+
+
 class AddDriver(StatesGroup):
     TELEGRAM_ID = State()
     NAME = State()
