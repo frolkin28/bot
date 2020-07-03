@@ -1,7 +1,7 @@
-from application import bot
+from aiogram import executor
+
+from application import dp
 
 
 if __name__ == '__main__':
-    bot.enable_save_next_step_handlers(delay=2)
-    bot.load_next_step_handlers()
-    bot.polling(none_stop=True)
+    executor.start_polling(dp, skip_updates=True)

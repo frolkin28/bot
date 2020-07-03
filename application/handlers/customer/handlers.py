@@ -1,6 +1,6 @@
-from config import bot
-from models import Admin, User
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
+
+from application import bot
 
 
 @bot.message_handler(commands=['start'])

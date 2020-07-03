@@ -1,100 +1,117 @@
 import os
 import pydantic
 
-from application import bot
+from aiogram import types
+from aiogram.dispatcher import FSMContext
+
+from application import dp
 from application.services import AdminService
+from application.states import AddAdmin, DeleteDriver
 from config import BASE_DIR
 from application.entities import AdminEntity
 from .validators import check_admin
 
 
-@bot.message_handler(func=check_admin, commands=['show_commands'])
-def show_commands(message):
-    file_path = str(BASE_DIR / 'application' / 'handlers' / 'admin' / 'commands.txt')
+@dp.message_handler(check_admin, commands=['show_commands'])
+async def show_commands(message: types.Message):
+    file_path = str(BASE_DIR / 'application' /
+                    'handlers' / 'admin' / 'commands.txt')
     with open(file_path, 'r') as f:
         text = f.read()
-    bot.send_message(chat_id=message.chat.id, text=text)
+    await message.answer(text=text)
 
 
-@bot.message_handler(func=check_admin, commands=['add_admin'])
-def add_admin(message):
-    text = 'Отлично! Введи telegram id нового админа'
-    msg = bot.send_message(chat_id=message.chat.id, text=text)
-    bot.register_next_step_handler(msg, admin_id_step)
+@dp.message_handler(check_admin, commands=['add_admin'])
+async def add_admin(message: types.Message):
+    text = 'Отлично! Введи telegram_id нового админа'
+    await AddAdmin.TELEGRAM_ID.set()
+    await message.answer(text=text)
 
 
-def admin_id_step(message):
-    admin = {}
-    admin['telegram_id'] = message.text
+@dp.message_handler(check_admin, state=AddAdmin.TELEGRAM_ID)
+async def admin_id_step(message: types.Message, state: FSMContext):
+    telegram_id = message.text
+
+    async with state.proxy() as state:
+        state['admin'] = {'telegram_id': telegram_id}
     text = 'Теперь введи имя админа'
-    msg = bot.send_message(chat_id=message.chat.id, text=text)
-    bot.register_next_step_handler(msg, admin_name_step, admin=admin)
+
+    await AddAdmin.NAME.set()
+    await message.answer(text=text)
 
 
-def admin_name_step(message, admin):
-    admin['name'] = message.text
+@dp.message_handler(check_admin, state=AddAdmin.NAME)
+async def admin_name_step(message: types.Message, state: FSMContext):
+    name = message.text
+
+    async with state.proxy() as state:
+        state['admin']['name'] = name
+
     text = 'Теперь введи username админа без символа @'
-    msg = bot.send_message(chat_id=message.chat.id, text=text)
-    bot.register_next_step_handler(msg, admin_username_step, admin=admin)
+    await AddAdmin.USERNAME.set()
+    await message.answer(text=text)
 
 
-def admin_username_step(message, admin):
-    admin['username'] = message.text
-    admin['creator'] = False
+@dp.message_handler(check_admin, state=AddAdmin.USERNAME)
+async def admin_username_step(message: types.Message, state: FSMContext):
+    username = message.text
+    data = await state.get_data()
+    admin = data.get('admin')
+    admin['username'] = username
+    await state.finish()
     try:
         new_admin = AdminEntity(**admin)
     except pydantic.ValidationError:
-        bot.send_message(chat_id=message.chat.id,
-                         text='Введены неверные данные, попробуй еще раз')
+        await message.answer(text='Введены неверные данные, попробуй еще раз')
     else:
         created_admin = AdminService().create(new_admin)
         if created_admin:
             text = f'Админ {created_admin.name} добавлен!'
         else:
             text = 'Такой админ уже существует'
-        bot.send_message(chat_id=message.chat.id, text=text)
+
+        await message.answer(text=text)
 
 
-@bot.message_handler(func=check_admin, commands=['show_admins'])
-def show_admins(message):
+@dp.message_handler(check_admin, commands=['show_admins'])
+async def show_admins(message: types.Message):
     admins = AdminService().get_all()
     if admins:
         for admin in admins:
             text = 'ID: {}\nName: {}\nUsername: {}'.format(
                 str(admin.telegram_id), admin.name, admin.username)
-            bot.send_message(chat_id=message.chat.id, text=text)
+            await message.answer(text=text)
     else:
-        bot.send_message(chat_id=message.chat.id, text='Пока нет админов')  
+        await message.answer(text='Пока нет админов')
 
 
-@bot.message_handler(func=check_admin, commands=['delete_admin'])
-def delete_admin(message):
-    msg = bot.send_message(chat_id=message.chat.id, text='Введи telegram id админа')
-    bot.register_next_step_handler(msg, admin_delete_step)
+@dp.message_handler(check_admin, commands=['delete_admin'])
+async def delete_admin(message: types.Message):
+    await DeleteDriver.TELEGRAM_ID.set()
+    await message.answer(text='Введи telegram id админа')
 
 
-def admin_delete_step(message):
+@dp.message_handler(check_admin, state=DeleteDriver.TELEGRAM_ID)
+async def admin_delete_step(message: types.Message, state: FSMContext):
     try:
-        telegram_id = int(message.text) 
-        admin = AdminService().get_by_tg_id(telegram_id)
+        telegram_id = int(message.text)
+        service = AdminService()
+        admin = service.get_by_tg_id(telegram_id)
         if admin:
             if admin.creator:
-                bot.send_message(chat_id=message.chat.id,
-                                text='Нельзя удалить создателя')
+                text = 'Нельзя удалить создателя'
             elif admin.telegram_id == int(message.from_user.id):
-                bot.send_message(chat_id=message.chat.id,
-                                text='Прости, но себя удалить нельзя')
+                text='Прости, но себя удалить нельзя'
             else:
                 service.delete(admin.telegram_id)
-                bot.send_message(chat_id=message.chat.id,
-                            text=f'Админ {admin.name} удален!')
+                text=f'Админ {admin.name} удален!'
         else:
-            bot.send_message(chat_id=message.chat.id,
-                text=f'Такого админа не существует')
+            text=f'Такого админа не существует'
     except ValueError:
-        bot.send_message(chat_id=message.chat.id,
-            text=f'Неверный telegram id. Попробуй еще раз')
+        text=f'Неверный telegram id. Попробуй еще раз'
 
+    await state.finish()
+    await message.answer(text=text)
 
 
 # @bot.message_handler(func=lambda  message: not message.startswith('/'))

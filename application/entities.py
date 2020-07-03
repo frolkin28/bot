@@ -10,7 +10,7 @@ class AdminEntity(pydantic.BaseModel):
     telegram_id: int
     name: str
     username: str
-    creator: bool
+    creator: bool = False
 
     class Config:
         orm_mode = True
