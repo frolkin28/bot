@@ -1,3 +1,5 @@
+'''Configuration of the project and global constants'''
+
 import os
 import pathlib
 from dotenv import load_dotenv

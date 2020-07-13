@@ -5,3 +5,4 @@ __pycache__/
 .env
 .handler-saves/
 setup_exp
+coords.json

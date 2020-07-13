@@ -1,3 +1,5 @@
+'''This module creates bot and dispatcher objects and does his configuration'''
+
 from aiogram import Bot, Dispatcher
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 

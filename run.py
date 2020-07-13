@@ -1,3 +1,5 @@
+'''Entrypoint to the application'''
+
 from aiogram import executor
 
 from application import dp

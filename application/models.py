@@ -1,3 +1,5 @@
+'''This module contains sqlalchemy models'''
+
 from sqlalchemy import Column, Integer, String, Enum, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -29,10 +31,3 @@ class Driver(Base):
     phone = Column(String(20))
     status = Column(Enum(DriverStatus), nullable=False,
                     default=DriverStatus.unavaliable)
-
-
-# class User(db.Model):
-#     id = Column(Integer, primary_key=True)
-#     telegram_id = Column(Integer, unique=True, nullable=False)
-#     username = Column(String(60))
-#     status = Column(Enum)

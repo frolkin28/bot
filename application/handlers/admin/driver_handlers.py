@@ -1,3 +1,5 @@
+'''Handlers for admins for managing drivers'''
+
 import pydantic
 
 from aiogram import types

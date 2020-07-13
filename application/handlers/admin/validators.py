@@ -1,3 +1,5 @@
+'''Local validators for handlers'''
+
 import re
 
 from application.services import AdminService

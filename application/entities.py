@@ -1,3 +1,5 @@
+'''This module contains classes for representation database models and making data validation'''
+
 import pydantic
 import typing
 import re

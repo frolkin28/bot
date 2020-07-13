@@ -1,3 +1,5 @@
+'''This module contains tools for making requests to a database'''
+
 from contextlib import contextmanager
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker

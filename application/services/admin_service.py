@@ -7,6 +7,8 @@ from application.models import Admin
 
 
 class AdminService:
+    '''Service for making queries related with admins' entities to a database'''
+
     def get(self, id: int) -> typing.Optional[AdminEntity]:
         with current_session() as session:
             admin = session.query(Admin).get(id)

@@ -7,6 +7,8 @@ import config
 
 
 class DriversQueueService:
+    '''Service for managing drivers' queue in Redis'''
+
     def __init__(self):
         self._client = redis.Redis(**config.redis_config)
 

@@ -8,6 +8,8 @@ from application.constants import DriverStatus
 
 
 class DriverService:
+    '''Service for making queries related with drivers' entities to a database'''
+
     def get_by_tg_id(self, telegram_id: int) -> typing.Optional[DriverEntity]:
         with current_session() as session:
             driver = session.query(Driver).filter(

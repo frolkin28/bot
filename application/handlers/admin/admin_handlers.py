@@ -1,3 +1,5 @@
+'''Handlers for admins for managing other admins'''
+
 import os
 import pydantic
 

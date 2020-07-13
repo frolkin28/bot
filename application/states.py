@@ -1,3 +1,5 @@
+'''This module contains states classes for establishing user state in aiogram fsm'''
+
 from aiogram.dispatcher.filters.state import StatesGroup, State
 
 
@@ -22,3 +24,9 @@ class AddDriver(StatesGroup):
 
 class DeleteDriver(StatesGroup):
     TELEGRAM_ID = State()
+
+
+class MakeOrder(StatesGroup):
+    FROM = State()
+    TO = State()
+    PEOPLE_AMOUNT = State()

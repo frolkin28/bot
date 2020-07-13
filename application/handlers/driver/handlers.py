@@ -1,3 +1,5 @@
+'''Handlers for drivers'''
+
 from aiogram import types
 
 from application import dp
