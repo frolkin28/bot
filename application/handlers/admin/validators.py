@@ -3,6 +3,7 @@
 import re
 
 from application.services import AdminService
+from application import dp
 
 
 async def check_admin(message):
