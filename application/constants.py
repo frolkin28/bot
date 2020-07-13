@@ -1,3 +1,5 @@
+'''Global enums and constants'''
+
 import enum
 
 
