@@ -1,17 +1,19 @@
 version: '3'
 
 services: 
-    bot:
+    taxibot_bot:
+        container_name: taxibot_bot
         build:
             context: .
-        volumes:
-            - .:./taxibot
         depends_on: 
-            - postgres
-        restart: 'on-failure'
+            - taxibot_postgres
+        restart: on-failure
 
-    mysql:
-        image: mysql:8
-        restart: 'on-failure'
+    taxibot_postgres:
+        container_name: taxibot_db
+        image: postgres:12-alpine
+        restart: on-failure
         ports:
-            - 3307:3306
+            - 5432:5432
+        env_file:
+            - .env
