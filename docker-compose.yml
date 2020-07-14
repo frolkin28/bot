@@ -1,0 +1,17 @@
+version: '3'
+
+services: 
+    bot:
+        build:
+            context: .
+        volumes:
+            - .:./taxibot
+        depends_on: 
+            - postgres
+        restart: 'on-failure'
+
+    mysql:
+        image: mysql:8
+        restart: 'on-failure'
+        ports:
+            - 3307:3306

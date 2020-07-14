@@ -37,7 +37,7 @@ async def share_to_location(message: types.Message, state: FSMContext):
     await message.answer('Геолокация получена', reply_markup=types.ReplyKeyboardRemove())
 
 
-@dp.message_handler(text='Отмена заказа')
+@dp.message_handler(state='*', text='Отмена заказа')
 async def cancel_order(message: types.Message, state: FSMContext):
     await state.finish()
     await message.answer(text='Заказ отменен', reply_markup=types.ReplyKeyboardRemove())
