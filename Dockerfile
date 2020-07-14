@@ -1,11 +1,14 @@
 FROM python:3.7-slim
 
-COPY . /taxibot
 WORKDIR /taxibot
-
+COPY requirements.txt ./req/
 
 RUN apt-get update \
 && apt-get install gcc -y \
-&& pip install -r requirements.txt
+&& pip install -r ./req/requirements.txt \
+&& rm -rf /var/lib/apt/lists/*
 
-CMD ["python3.7", "run.py"]
+COPY . .
+RUN rm requirements.txt
+
+ENTRYPOINT ["python3.7", "run.py"]

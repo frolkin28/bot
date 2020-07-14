@@ -1,0 +1,17 @@
+.idea/
+.vscode/
+
+**/*.pyc
+**/__pycache__
+
+.git/
+.gitignore
+
+.handler-saves/
+README.md
+
+docker-compose*.yml
+Dockerfile
+
+setup_exp
+coords.json
