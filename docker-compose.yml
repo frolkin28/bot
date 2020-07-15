@@ -3,11 +3,11 @@ version: '3'
 services: 
     bot:
         container_name: taxibot_bot
+        restart: on-failure
         build:
             context: .
         depends_on: 
             - postgres
-        restart: on-failure
         networks: 
             - taxibot_net
         volumes: 
@@ -26,9 +26,21 @@ services:
         volumes: 
             - postgres-data:/var/lib/postgresql/data
 
+    redis:
+        container_name: taxibot_redis
+        image: redis:6.0.5-alpine
+        restart: on-failure
+        ports:
+            - 6379:6379
+        networks: 
+            - taxibot_net
+        volumes: 
+            - redis:/data
+
 networks: 
     taxibot_net:
         driver: bridge
 
 volumes:
     postgres-data:
+    redis:
