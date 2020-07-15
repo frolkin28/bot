@@ -1,15 +1,19 @@
 version: '3'
 
 services: 
-    taxibot_bot:
+    bot:
         container_name: taxibot_bot
         build:
             context: .
         depends_on: 
-            - taxibot_postgres
+            - postgres
         restart: on-failure
+        networks: 
+            - taxibot_net
+        volumes: 
+            - ./:/taxibot
 
-    taxibot_postgres:
+    postgres:
         container_name: taxibot_db
         image: postgres:12-alpine
         restart: on-failure
@@ -17,3 +21,14 @@ services:
             - 5432:5432
         env_file:
             - .env
+        networks: 
+            - taxibot_net
+        volumes: 
+            - postgres-data:/var/lib/postgresql/data
+
+networks: 
+    taxibot_net:
+        driver: bridge
+
+volumes:
+    postgres-data:
